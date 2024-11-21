@@ -18,14 +18,30 @@
                 document.getElementById('eliminar-form-' + tareaId).submit();
             }
         }
+    // Abrir la barra lateral
+    function openSidebar() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    // Cerrar la barra lateral
+    function closeSidebar() {
+        document.getElementById("sidebar").style.width = "0";
+    }
     </script>
 </head>
 <body>
+    
     <div class="container">
-        <h2>Bienvenido,</h2>
+        <!-- Botón para abrir la barra lateral -->
+        <button class="open-sidebar-btn" onclick="openSidebar()">☰ </button>
 
-        <!-- Enlace para cerrar sesión -->
-        <a href="{{ url_for('logout') }}" class="logout-btn">Cerrar sesión</a>
+        <!-- Barra lateral -->
+        <div id="sidebar" class="sidebar">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()">×</a>
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+            <a href="{{ url_for('editar_datos_usuario') }}">Editar datos de usuario</a>
+        </div>
+        <h1 >Bienvenido, !</h1> 
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -49,7 +65,6 @@
 
         <h3>Tareas</h3>
         
-        <!-- Tablero Kanban: dividiendo las tareas por estado -->
         <div class="kanban-container">
             <div class="kanban-column">
                 <h4>Pendiente</h4>
@@ -121,8 +136,10 @@
                         {% endif %}
                     {% endfor %}
                 </ul>
+                
             </div>
         </div>
     </div>
 </body>
+
 </html>

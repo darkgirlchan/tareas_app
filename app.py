@@ -190,10 +190,47 @@ def restablecer_contrasena(usuario_id):
 
     return render_template('restablecer_contrasena.html', usuario_id=usuario_id)
 
-# Ruta para cerrar sesión
+
+@app.route('/editar-datos-usuario', methods=['GET', 'POST'])
+def editar_datos_usuario():
+    # Acceder al usuario actual desde la sesión
+    usuario_id = session['user_id']
+    
+    cursor = conn.cursor()
+    
+    if request.method == 'POST':
+        nuevo_nombre = request.form['nombre']
+        nuevo_email = request.form['email']
+        
+        if nuevo_nombre and nuevo_email:
+            query = """
+                UPDATE usuarios
+                SET nombre = ?, email = ?
+                WHERE id = ?
+            """
+            cursor.execute(query, (nuevo_nombre, nuevo_email, usuario_id))
+            conn.commit()
+            
+            flash('Datos del usuario actualizados correctamente.', 'success')
+            return redirect(url_for('editar_datos_usuario'))
+        else:
+            flash('Todos los campos son obligatorios.', 'danger')
+            return redirect(url_for('editar_datos_usuario'))
+    
+    # Obtener los datos actuales del usuario para prellenar el formulario
+    query = """
+        SELECT nombre, email FROM usuarios WHERE id = ?
+    """
+    cursor.execute(query, (usuario_id,))
+    usuario = cursor.fetchone()
+
+    return render_template('editar_datos_usuario.html', usuario=usuario)
+    
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)  # Eliminar el ID de la sesión
+    # Lógica para cerrar sesión
+    session.pop('user_id', None)
+    flash('Has cerrado sesión correctamente.', 'success')
     return redirect(url_for('login'))
 
 # Ejecutar la aplicación

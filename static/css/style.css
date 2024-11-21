@@ -1,21 +1,23 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
-    margin: 0;
+    margin: 15;
     padding: 0;
-}
-
-.container, .form-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 1100px;
     margin: 20px auto;
-    background-color: #fff;
     padding: 20px;
+    background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-input, textarea, button {
+h2, h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+input, textarea, select, button {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
@@ -23,33 +25,41 @@ input, textarea, button {
     border-radius: 5px;
 }
 
+input[disabled] {
+    background-color: #f9f9f9;
+}
+
 button {
     background-color: #4CAF50;
     color: white;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 button:hover {
     background-color: #45a049;
 }
 
-h2, h3 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-/* Estilo general del contenedor */
-.container {
-    width: 80%;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-h2 {
-    text-align: center;
+.flash-messages {
     margin-bottom: 20px;
 }
 
-/* Estilo para las columnas del tablero Kanban */
+.flash-message {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.flash-message.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flash-message.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
 .kanban-container {
     display: flex;
     justify-content: space-between;
@@ -83,33 +93,64 @@ h2 {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.kanban-column form select {
-    margin-top: 10px;
-    padding: 5px;
-    width: 100%;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: #333;
+    overflow-x: hidden;
+    transition: 0.3s;
+    padding-top: 60px;
+    color: white;
 }
 
-form input, form textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+.sidebar a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    display: block;
+    transition: 0.3s;
 }
 
-button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
+.sidebar a:hover {
+    background-color: #575757;
+}
+
+.open-sidebar-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #007BFF;
     color: white;
     border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.open-sidebar-btn:hover {
+    background-color: #0056b3;
+}
+
+.logout-btn, .eliminar-btn {
+    padding: 10px 20px;
+    color: white;
     border-radius: 5px;
     cursor: pointer;
 }
 
-button:hover {
-    background-color: #45a049;
+.logout-btn {
+    background-color: #f44336;
+    text-decoration: none;
+}
+
+.logout-btn:hover {
+    background-color: #d32f2f;
 }
 
 .eliminar-btn {
@@ -117,22 +158,8 @@ button:hover {
     border: none;
     color: red;
     font-size: 20px;
-    cursor: pointer;
 }
 
 .eliminar-btn:hover {
     color: darkred;
-}
-.logout-btn {
-    background-color: #f44336;  /* Rojo para destacar */
-    color: white;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-top: 10px;
-    display: inline-block;
-}
-
-.logout-btn:hover {
-    background-color: #d32f2f;  /* Rojo más oscuro al pasar el ratón */
 }
