@@ -1,0 +1,12 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>restablecer contraseña</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<form method="POST" action="{{ url_for('restablecer_contrasena', usuario_id=usuario_id) }}">
+    <label for="nueva_contrasena">Nueva Contraseña:</label>
+    <input type="password" name="nueva_contrasena" required><br>
+
+    <button type="submit">Restablecer Contraseña</button>
+</form>

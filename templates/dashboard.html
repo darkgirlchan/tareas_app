@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        // Función de confirmación antes de eliminar la tarea
+        function confirmarEliminacion(event, tareaId) {
+            event.preventDefault(); // Prevenir el envío del formulario
+
+            // Mostrar el mensaje de confirmación
+            let confirmacion = confirm("¿Seguro que quieres eliminar esta tarea?");
+            
+            if (confirmacion) {
+                // Si el usuario confirma, enviamos el formulario
+                document.getElementById('eliminar-form-' + tareaId).submit();
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Bienvenido,</h2>
+
+        <!-- Enlace para cerrar sesión -->
+        <a href="{{ url_for('logout') }}" class="logout-btn">Cerrar sesión</a>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Formulario para crear una nueva tarea -->
+        <form action="{{ url_for('crear_tarea') }}" method="POST">
+            <input type="text" name="titulo" placeholder="Título de la tarea" required>
+            <textarea name="descripcion" placeholder="Descripción de la tarea" required></textarea>
+            <input type="email" name="email_asignado" placeholder="Email del usuario asignado">
+            <button type="submit">Crear Tarea</button>
+        </form>        
+
+        <h3>Tareas</h3>
+        
+        <!-- Tablero Kanban: dividiendo las tareas por estado -->
+        <div class="kanban-container">
+            <div class="kanban-column">
+                <h4>Pendiente</h4>
+                <ul>
+                    {% for tarea in tareas %}
+                        {% if tarea[3] == 'Pendiente' %}
+                            <li>
+                                <strong>{{ tarea[1] }}</strong> - {{ tarea[2] }}
+                                <!-- Formulario para cambiar el estado de la tarea -->
+                                <form action="{{ url_for('cambiar_estado', tarea_id=tarea[0]) }}" method="POST">
+                                    <select name="estado" onchange="this.form.submit()">
+                                        <option value="Pendiente" {% if tarea[3] == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                                        <option value="En Progreso" {% if tarea[3] == 'En Progreso' %}selected{% endif %}>En Progreso</option>
+                                        <option value="Completada" {% if tarea[3] == 'Completada' %}selected{% endif %}>Completada</option>
+                                    </select>
+                                </form>
+                                <form id="eliminar-form-{{ tarea[0] }}" action="{{ url_for('eliminar_tarea', tarea_id=tarea[0]) }}" method="POST" style="display:inline;">
+                                    <button type="button" class="eliminar-btn" onclick="confirmarEliminacion(event, {{ tarea[0] }})">❌</button>
+                                </form>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="kanban-column">
+                <h4>En Progreso</h4>
+                <ul>
+                    {% for tarea in tareas %}
+                        {% if tarea[3] == 'En Progreso' %}
+                            <li>
+                                <strong>{{ tarea[1] }}</strong> - {{ tarea[2] }}
+                                <form action="{{ url_for('cambiar_estado', tarea_id=tarea[0]) }}" method="POST">
+                                    <select name="estado" onchange="this.form.submit()">
+                                        <option value="Pendiente" {% if tarea[3] == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                                        <option value="En Progreso" {% if tarea[3] == 'En Progreso' %}selected{% endif %}>En Progreso</option>
+                                        <option value="Completada" {% if tarea[3] == 'Completada' %}selected{% endif %}>Completada</option>
+                                    </select>
+                                    
+                                </form>
+                                <form id="eliminar-form-{{ tarea[0] }}" action="{{ url_for('eliminar_tarea', tarea_id=tarea[0]) }}" method="POST" style="display:inline;">
+                                    <button type="button" class="eliminar-btn" onclick="confirmarEliminacion(event, {{ tarea[0] }})">❌</button>
+                                </form>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="kanban-column">
+                <h4>Completadas</h4>
+                <ul>
+                    {% for tarea in tareas %}
+                        {% if tarea[3] == 'Completada' %}
+                            <li>
+                                <strong>{{ tarea[1] }}</strong> - {{ tarea[2] }}
+                                <form action="{{ url_for('cambiar_estado', tarea_id=tarea[0]) }}" method="POST">
+                                    <select name="estado" onchange="this.form.submit()">
+                                        <option value="Pendiente" {% if tarea[3] == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                                        <option value="En Progreso" {% if tarea[3] == 'En Progreso' %}selected{% endif %}>En Progreso</option>
+                                        <option value="Completada" {% if tarea[3] == 'Completada' %}selected{% endif %}>Completada</option>
+                                    </select>
+                                    
+                                </form>
+                                <form id="eliminar-form-{{ tarea[0] }}" action="{{ url_for('eliminar_tarea', tarea_id=tarea[0]) }}" method="POST" style="display:inline;">
+                                    <button type="button" class="eliminar-btn" onclick="confirmarEliminacion(event, {{ tarea[0] }})">❌</button>
+                                </form>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
