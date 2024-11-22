@@ -104,11 +104,22 @@ def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
+    # Obtener el nombre del usuario logueado
+    cursor.execute("SELECT nombre FROM usuarios WHERE id = ?", (session['user_id'],))
+    usuario = cursor.fetchone()
+    
+    # Si no se encuentra el usuario, redirigir al login
+    if not usuario:
+        flash("Usuario no encontrado.", "error")
+        return redirect(url_for('login'))
+
+    nombre_usuario = usuario[0]  # El nombre del usuario
+    
     # Obtener las tareas del usuario logueado
     cursor.execute("SELECT * FROM tareas WHERE usuario_id = ?", (session['user_id'],))
     tareas = cursor.fetchall()  # Obtener todas las tareas del usuario
     
-    return render_template('dashboard.html', tareas=tareas)
+    return render_template('dashboard.html', tareas=tareas, nombre_usuario=nombre_usuario)
 
 @app.route('/crear_tarea', methods=['POST'])
 def crear_tarea():
@@ -127,17 +138,17 @@ def crear_tarea():
     # Buscar el ID del usuario asignado por su correo electrónico
     cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email_asignado,))
     resultado = cursor.fetchone()
+   
+
+    cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email_asignado,))
+    resultado = cursor.fetchone()
 
     if resultado:
-        # Si el correo existe, asignar el ID del usuario encontrado
         asignado_a = resultado[0]
+        usuario_id = asignado_a  # Se actualiza el creador de la tarea al asignado
     else:
         # Si el correo no existe
         if email_asignado == "":
-            # Si no se proporcionó un correo, asignar al usuario en sesión
-            asignado_a = usuario_id
-        else:
-            # Si se proporcionó un correo, pero no existe en la base de datos
             flash("El correo no existe. No se puede asignar la tarea.", "error")
             return redirect(url_for('dashboard'))
 
