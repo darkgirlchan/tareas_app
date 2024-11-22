@@ -3,6 +3,7 @@ import bcrypt
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime
 from flask import flash
+import re
 from flask import Flask, render_template, request, redirect, url_for
 
 # Configuración de la base de datos
@@ -20,9 +21,29 @@ def home():
         return redirect(url_for('dashboard'))
     return render_template('login.html')
 
-# Ruta para el registro de usuarios
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    def validar_contraseña(password):
+        """
+        Valida que la contraseña cumpla con los siguientes requisitos:
+        - Al menos 8 caracteres
+        - Al menos una letra mayúscula
+        - Al menos una letra minúscula
+        - Al menos un número
+        - Al menos un símbolo
+        """
+        if len(password) < 8:
+            return "La contraseña debe tener al menos 8 caracteres."
+        if not re.search(r"[A-Z]", password):
+            return "La contraseña debe tener al menos una letra mayúscula."
+        if not re.search(r"[a-z]", password):
+            return "La contraseña debe tener al menos una letra minúscula."
+        if not re.search(r"\d", password):
+            return "La contraseña debe tener al menos un número."
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+            return "La contraseña debe tener al menos un símbolo especial."
+        return None
+
     if request.method == 'POST':
         # Recoger datos del formulario
         nombre = request.form['nombre']
@@ -30,20 +51,29 @@ def register():
         password = request.form['password']
         fecha_nacimiento = request.form['fecha_nacimiento']
 
+        # Validar la contraseña
+        mensaje_error = validar_contraseña(password)
+        if mensaje_error:
+            return render_template('register.html', mensaje_error=mensaje_error)
+
         # Verificar si el email ya está registrado en la base de datos
         cursor.execute("SELECT * FROM usuarios WHERE email=?", (email,))
         existing_user = cursor.fetchone()
         if existing_user:
-            return "El correo electrónico ya está registrado."
+            return render_template('register.html', mensaje_error="El correo electrónico ya está registrado.")
 
         # Generar el hash de la contraseña
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-        # Asegúrate de que el campo en la base de datos sea lo suficientemente largo
-        cursor.execute("INSERT INTO usuarios (nombre, email, password,fecha_nacimiento) VALUES (?, ?, ?,?)", (nombre, email, hashed_password.decode('utf-8'),fecha_nacimiento))
+        # Insertar datos en la base de datos
+        cursor.execute(
+            "INSERT INTO usuarios (nombre, email, password, fecha_nacimiento) VALUES (?, ?, ?, ?)",
+            (nombre, email, hashed_password.decode('utf-8'), fecha_nacimiento)
+        )
         conn.commit()
 
         return redirect(url_for('login'))
+
     return render_template('register.html')
 
 # Ruta para el inicio de sesión
@@ -79,13 +109,17 @@ def dashboard():
     tareas = cursor.fetchall()  # Obtener todas las tareas del usuario
     
     return render_template('dashboard.html', tareas=tareas)
+
 @app.route('/crear_tarea', methods=['POST'])
 def crear_tarea():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
+    # Recoger datos del formulario
     titulo = request.form['titulo']
     descripcion = request.form['descripcion']
+    prioridad = request.form['prioridad']
+    fecha_entrega = request.form['fecha_entrega']  # Nuevo campo
     estado = 'Pendiente'
     usuario_id = session['user_id']
     email_asignado = request.form['email_asignado']
@@ -95,9 +129,8 @@ def crear_tarea():
     resultado = cursor.fetchone()
 
     if resultado:
-    # Si el correo existe, asignar el ID del usuario encontrado
+        # Si el correo existe, asignar el ID del usuario encontrado
         asignado_a = resultado[0]
-        usuario_id = asignado_a  # Se actualiza el creador de la tarea al asignado
     else:
         # Si el correo no existe
         if email_asignado == "":
@@ -108,13 +141,71 @@ def crear_tarea():
             flash("El correo no existe. No se puede asignar la tarea.", "error")
             return redirect(url_for('dashboard'))
 
+    # Insertar la nueva tarea con prioridad y fecha de entrega
     cursor.execute(
-        "INSERT INTO tareas (titulo, descripcion, estado, usuario_id, asignado_a) VALUES (?, ?, ?, ?, ?)",
-        (titulo, descripcion, estado, usuario_id, asignado_a)
+        """
+        INSERT INTO tareas (titulo, descripcion, estado, usuario_id, asignado_a, prioridad, fecha_entrega)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (titulo, descripcion, estado, usuario_id, asignado_a, prioridad, fecha_entrega)
     )
     conn.commit()
 
+    flash("Tarea creada exitosamente.", "success")
     return redirect(url_for('dashboard'))
+
+@app.route('/editar_tarea/<int:tarea_id>', methods=['GET'])
+def editar_tarea(tarea_id):
+    cursor.execute("SELECT id, titulo, descripcion, fecha_entrega FROM tareas WHERE id = ?", (tarea_id,))
+    tarea = cursor.fetchone()
+    
+    if not tarea:
+        flash("Tarea no encontrada.", "error")
+        return redirect(url_for('dashboard'))
+    
+    return render_template('editar_tarea.html', tarea=tarea)
+@app.route('/guardar_tarea_editada/<int:tarea_id>', methods=['POST'])
+def guardar_tarea_editada(tarea_id):
+    # Recoger los datos del formulario
+    titulo = request.form['titulo']
+    descripcion = request.form['descripcion']
+    fecha_entrega = request.form['fecha_entrega']
+
+    # Actualizar en la base de datos
+    cursor.execute("""
+        UPDATE tareas 
+        SET titulo = ?, descripcion = ?, fecha_entrega = ?
+        WHERE id = ?
+    """, (titulo, descripcion, fecha_entrega, tarea_id))
+    conn.commit()
+
+    flash("Tarea actualizada con éxito.", "success")
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/cambiar_prioridad/<int:tarea_id>', methods=['POST'])
+def cambiar_prioridad(tarea_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Obtener la nueva prioridad desde el formulario
+    nueva_prioridad = request.form['prioridad']
+
+    # Realizar la actualización en la base de datos
+    cursor.execute("UPDATE tareas SET prioridad = ? WHERE id = ?", (nueva_prioridad, tarea_id))
+    conn.commit()
+
+    # Verificar la actualización (opcional, para depuración)
+    cursor.execute("SELECT prioridad FROM tareas WHERE id = ?", (tarea_id,))
+    nueva_prioridad_db = cursor.fetchone()[0]
+    print(f"Prioridad actualizada a: {nueva_prioridad_db}")
+
+    # Flash para confirmar que la prioridad se ha actualizado
+    flash('La prioridad de la tarea ha sido actualizada.', 'success')
+
+    # Redirigir a la página del dashboard
+    return redirect(url_for('dashboard'))
+
 
 @app.route('/cambiar_estado/<int:tarea_id>', methods=['POST'])
 def cambiar_estado(tarea_id):
@@ -170,8 +261,34 @@ def recuperar_contrasena():
 
 @app.route('/restablecer_contrasena/<int:usuario_id>', methods=['POST', 'GET'])
 def restablecer_contrasena(usuario_id):
+    def validar_contraseña(password):
+        """
+        Valida que la contraseña cumpla con los siguientes requisitos:
+        - Al menos 8 caracteres
+        - Al menos una letra mayúscula
+        - Al menos una letra minúscula
+        - Al menos un número
+        - Al menos un símbolo
+        """
+        if len(password) < 8:
+            return "La contraseña debe tener al menos 8 caracteres."
+        if not re.search(r"[A-Z]", password):
+            return "La contraseña debe tener al menos una letra mayúscula."
+        if not re.search(r"[a-z]", password):
+            return "La contraseña debe tener al menos una letra minúscula."
+        if not re.search(r"\d", password):
+            return "La contraseña debe tener al menos un número."
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+            return "La contraseña debe tener al menos un símbolo."
+        return None
+
     if request.method == 'POST':
         nueva_contrasena = request.form['nueva_contrasena']
+
+        # Validar la nueva contraseña
+        mensaje_error = validar_contraseña(nueva_contrasena)
+        if mensaje_error:
+            return render_template('restablecer_contrasena.html', usuario_id=usuario_id, mensaje_error=mensaje_error)
 
         # Hash opcional para la contraseña
         hashed_password = bcrypt.hashpw(nueva_contrasena.encode('utf-8'), bcrypt.gensalt())

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Tarea</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h2>Editar Tarea</h2>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Formulario para editar la tarea -->
+    <form method="POST" action="{{ url_for('guardar_tarea_editada', tarea_id=tarea[0]) }}">
+        <label for="titulo">Título de la tarea:</label>
+        <input type="text" id="titulo" name="titulo" value="{{ tarea[1] }}" required>
+        <br>
+    
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcion" required>{{ tarea[2] }}</textarea>
+        <br>
+    
+        <label for="fecha_entrega">Fecha de entrega:</label>
+        <input type="date" id="fecha_entrega" name="fecha_entrega" value="{{ tarea[7] }}" required>
+        <br>
+    
+        <button type="submit">Guardar Cambios</button>
+    </form>
+    
+
+    <a href="{{ url_for('dashboard') }}">Volver al Dashboard</a>
+</body>
+</html>

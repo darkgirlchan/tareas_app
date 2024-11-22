@@ -27,6 +27,7 @@
     function closeSidebar() {
         document.getElementById("sidebar").style.width = "0";
     }
+    
     </script>
 </head>
 <body>
@@ -41,7 +42,7 @@
             <a href="{{ url_for('logout') }}">Cerrar sesión</a>
             <a href="{{ url_for('editar_datos_usuario') }}">Editar datos de usuario</a>
         </div>
-        <h1 >Bienvenido, !</h1> 
+        <h1>Bienvenido, !</h1>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -60,8 +61,14 @@
             <input type="text" name="titulo" placeholder="Título de la tarea" required>
             <textarea name="descripcion" placeholder="Descripción de la tarea" required></textarea>
             <input type="email" name="email_asignado" placeholder="Email del usuario asignado">
+            <select placeholder="prioridad" name="prioridad" required>
+                <option value="Alta">Prioridad Alta</option>
+                <option value="Media">Prioridad Media</option>
+                <option value="Baja">Prioridad Baja</option>
+            </select>
+            <input type="date" name="fecha_entrega" placeholder="Fecha de Entrega" required>
             <button type="submit">Crear Tarea</button>
-        </form>        
+        </form>    
 
         <h3>Tareas</h3>
         
@@ -72,8 +79,21 @@
                     {% for tarea in tareas %}
                         {% if tarea[3] == 'Pendiente' %}
                             <li>
-                                <strong>{{ tarea[1] }}</strong> - {{ tarea[2] }}
-                                <!-- Formulario para cambiar el estado de la tarea -->
+                                <strong>ID: {{ tarea[0] }}</strong><br>
+                                <strong>{{ tarea[1] }}</strong><br> 
+                                <strong>detalle:  </strong>{{ tarea[2] }}<br>
+                                <strong>prioridad:</strong> {{ tarea[6] }}<br>
+                                <strong>Fecha de Entrega: </strong>{{ tarea[7] }}<br>
+                                <form action="{{ url_for('editar_tarea', tarea_id=tarea[0]) }}" method="GET" style="display:inline;">
+                                    <button type="submit" class="btn-editar">✏️ Editar</button>
+                                </form>
+                                <form action="{{ url_for('cambiar_prioridad', tarea_id=tarea[0]) }}" method="POST">
+                                    <select name="prioridad" onchange="this.form.submit()">
+                                        <option value="Alta" {% if tarea[6] == 'Alta' %}selected{% endif %}>Alta</option>
+                                        <option value="Media" {% if tarea[6] == 'Media' %}selected{% endif %}>Media</option>
+                                        <option value="Baja" {% if tarea[6] == 'Baja' %}selected{% endif %}>Baja</option>
+                                    </select>
+                                </form>
                                 <form action="{{ url_for('cambiar_estado', tarea_id=tarea[0]) }}" method="POST">
                                     <select name="estado" onchange="this.form.submit()">
                                         <option value="Pendiente" {% if tarea[3] == 'Pendiente' %}selected{% endif %}>Pendiente</option>
@@ -96,7 +116,20 @@
                     {% for tarea in tareas %}
                         {% if tarea[3] == 'En Progreso' %}
                             <li>
-                                <strong>{{ tarea[1] }}</strong> - {{ tarea[2] }}
+                                <strong>ID: {{ tarea[0] }}</strong><br>
+                                <strong>{{ tarea[1] }}</strong><br> <strong>detalle:  </strong>{{ tarea[2] }}<br>
+                                <strong>prioridad:</strong> {{ tarea[6] }}<br>
+                                <strong>Fecha de Entrega: </strong>{{ tarea[7] }}<br>
+                                <form action="{{ url_for('editar_tarea', tarea_id=tarea[0]) }}" method="GET" style="display:inline;">
+                                    <button type="submit" class="btn-editar">✏️ Editar</button>
+                                </form>
+                                <form action="{{ url_for('cambiar_prioridad', tarea_id=tarea[0]) }}" method="POST">
+                                    <select name="prioridad" onchange="this.form.submit()">
+                                        <option value="Alta" {% if tarea[6] == 'Alta' %}selected{% endif %}>Alta</option>
+                                        <option value="Media" {% if tarea[6] == 'Media' %}selected{% endif %}>Media</option>
+                                        <option value="Baja" {% if tarea[6] == 'Baja' %}selected{% endif %}>Baja</option>
+                                    </select>
+                                </form>
                                 <form action="{{ url_for('cambiar_estado', tarea_id=tarea[0]) }}" method="POST">
                                     <select name="estado" onchange="this.form.submit()">
                                         <option value="Pendiente" {% if tarea[3] == 'Pendiente' %}selected{% endif %}>Pendiente</option>
@@ -120,7 +153,20 @@
                     {% for tarea in tareas %}
                         {% if tarea[3] == 'Completada' %}
                             <li>
-                                <strong>{{ tarea[1] }}</strong> - {{ tarea[2] }}
+                                <strong>ID: {{ tarea[0] }}</strong><br>
+                                <strong>{{ tarea[1] }}</strong><br> <strong>detalle:  </strong>{{ tarea[2] }}<br>
+                                <strong>prioridad:</strong> {{ tarea[6] }}<br>
+                                <strong>Fecha de Entrega: </strong>{{ tarea[7] }}<br>
+                                <form action="{{ url_for('editar_tarea', tarea_id=tarea[0]) }}" method="GET" style="display:inline;">
+                                    <button type="submit" class="btn-editar">✏️ Editar</button>
+                                </form>
+                                <form action="{{ url_for('cambiar_prioridad', tarea_id=tarea[0]) }}" method="POST">
+                                    <select name="prioridad" onchange="this.form.submit()">
+                                        <option value="Alta" {% if tarea[6] == 'Alta' %}selected{% endif %}>Alta</option>
+                                        <option value="Media" {% if tarea[6] == 'Media' %}selected{% endif %}>Media</option>
+                                        <option value="Baja" {% if tarea[6] == 'Baja' %}selected{% endif %}>Baja</option>
+                                    </select>
+                                </form>
                                 <form action="{{ url_for('cambiar_estado', tarea_id=tarea[0]) }}" method="POST">
                                     <select name="estado" onchange="this.form.submit()">
                                         <option value="Pendiente" {% if tarea[3] == 'Pendiente' %}selected{% endif %}>Pendiente</option>
@@ -131,7 +177,7 @@
                                 </form>
                                 <form id="eliminar-form-{{ tarea[0] }}" action="{{ url_for('eliminar_tarea', tarea_id=tarea[0]) }}" method="POST" style="display:inline;">
                                     <button type="button" class="eliminar-btn" onclick="confirmarEliminacion(event, {{ tarea[0] }})">❌</button>
-                                </form>
+                                </form>                            
                             </li>
                         {% endif %}
                     {% endfor %}

@@ -5,18 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        function validarFormulario(event) {
+            const password = document.querySelector("input[name='password']").value;
+            const mensajeError = document.getElementById("mensaje-error");
+
+            // Validación de la contraseña
+            if (password.length < 8) {
+                mensajeError.textContent = "La contraseña debe tener al menos 8 caracteres.";
+                event.preventDefault();
+                return false;
+            }
+            if (!/[A-Z]/.test(password)) {
+                mensajeError.textContent = "La contraseña debe tener al menos una letra mayúscula.";
+                event.preventDefault();
+                return false;
+            }
+            if (!/[a-z]/.test(password)) {
+                mensajeError.textContent = "La contraseña debe tener al menos una letra minúscula.";
+                event.preventDefault();
+                return false;
+            }
+            if (!/\d/.test(password)) {
+                mensajeError.textContent = "La contraseña debe tener al menos un número.";
+                event.preventDefault();
+                return false;
+            }
+            if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password)) {
+                mensajeError.textContent = "La contraseña debe tener al menos un símbolo especial.";
+                event.preventDefault();
+                return false;
+            }
+
+            // Si todo está bien, limpia el mensaje de error
+            mensajeError.textContent = "";
+            return true;
+        }
+    </script>
 </head>
 <body>
     <div class="form-container">
         <h2>Registro de Usuario</h2>
-        <form action="{{ url_for('register') }}" method="POST">
+        <form action="{{ url_for('register') }}" method="POST" onsubmit="return validarFormulario(event)">
             <input type="text" name="nombre" placeholder="Nombre" required>
             <input type="email" name="email" placeholder="Correo Electrónico" required>
             <input type="password" name="password" placeholder="Contraseña" required>
-            <label for="fecha_nacimiento">Fecha de Nacimiento:</label><input type="date" name="fecha_nacimiento" required><br>
+            <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+            <input type="date" name="fecha_nacimiento" required><br>
+            <p id="mensaje-error" style="color: red; font-size: 0.9em;">
+                {{ mensaje_error if mensaje_error else '' }}
+            </p>
             <button type="submit">Registrarse</button>
         </form>
-        <p>Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión</a></p>
+        <p>¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión</a></p>
     </div>
 </body>
 </html>

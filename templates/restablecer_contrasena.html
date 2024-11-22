@@ -1,12 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>restablecer contraseña</title>
+    <title>Restablecer Contraseña</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<form method="POST" action="{{ url_for('restablecer_contrasena', usuario_id=usuario_id) }}">
-    <label for="nueva_contrasena">Nueva Contraseña:</label>
-    <input type="password" name="nueva_contrasena" required><br>
+    <script>
+        function validarFormulario(event) {
+            const password = document.querySelector("input[name='nueva_contrasena']").value;
+            const mensajeError = document.getElementById("mensaje-error");
 
-    <button type="submit">Restablecer Contraseña</button>
-</form>
+            // Validación de la contraseña
+            if (password.length < 8) {
+                mensajeError.textContent = "La contraseña debe tener al menos 8 caracteres.";
+                event.preventDefault();
+                return false;
+            }
+            if (!/[A-Z]/.test(password)) {
+                mensajeError.textContent = "La contraseña debe tener al menos una letra mayúscula.";
+                event.preventDefault();
+                return false;
+            }
+            if (!/[a-z]/.test(password)) {
+                mensajeError.textContent = "La contraseña debe tener al menos una letra minúscula.";
+                event.preventDefault();
+                return false;
+            }
+            if (!/\d/.test(password)) {
+                mensajeError.textContent = "La contraseña debe tener al menos un número.";
+                event.preventDefault();
+                return false;
+            }
+            if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password)) {
+                mensajeError.textContent = "La contraseña debe tener al menos un símbolo especial.";
+                event.preventDefault();
+                return false;
+            }
+
+            // Si todo está bien, limpia el mensaje de error
+            mensajeError.textContent = "";
+            return true;
+        }
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Restablecer Contraseña</h2>
+        <form method="POST" action="{{ url_for('restablecer_contrasena', usuario_id=usuario_id) }}" onsubmit="return validarFormulario(event)">
+            <label for="nueva_contrasena">Nueva Contraseña:</label>
+            <input type="password" name="nueva_contrasena" placeholder="Introduce tu nueva contraseña" required>
+            <p id="mensaje-error" style="color: red; font-size: 0.9em;">
+                {{ mensaje_error if mensaje_error else '' }}
+            </p>
+            <button type="submit">Restablecer Contraseña</button>
+        </form>
+        <p><a href="{{ url_for('login') }}">Volver al inicio de sesión</a></p>
+    </div>
+</body>
+</html>
